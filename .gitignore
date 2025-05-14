@@ -1,0 +1,10 @@
+*.o
+*.prg
+*.img
+dmapatch
+output/
+build/
+test/
+copier/
+attic/
+breakpoints.txt
