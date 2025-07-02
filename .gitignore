@@ -1,10 +1,14 @@
 *.o
 *.prg
+*.ttp
+*.tos
+*.PRG
+*.TTP
+*.TOS
 *.img
 dmapatch
 output/
 build/
 test/
-copier/
 attic/
 breakpoints.txt
