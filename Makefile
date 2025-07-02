@@ -1,36 +1,37 @@
 CC      ?= gcc
+LD      ?= gcc
+CC      = m68k-atari-tos-gnu-gcc
+LD      = m68k-atari-tos-gnu-ld
 CFLAGS  = -std=c99 -Wall -Wextra -O2
 
-SRC     = main.c endian_utils.c
-OBJ     = $(SRC:.c=.o)
+OBJS		= main.o endian_utils.o
 
-TARGET     = dmapatch
-INPUT      = ./test/HDDRIVER.ORG
-OUTPUT     = ./test/HDDRIVER.SYS
-BUILD_DIR  = build
+TARGET     	= dmapatch
+PRG			= DMAPATCH.PRG
+INPUT      	= ./test/HDDRIVER.ORG
+OUTPUT     	= ./test/HDDRIVER.SYS
+BUILD_DIR  	= build
 
-HD_IMG     ?= hd.img
-CLEAN_IMG  ?= ../hd-clean.img
-HATARI     ?= hatari-hrdb
-TOS_ROM    ?= $(HOME)/ATARI/TOS/tos162uk.img
-TIME       ?= $(shell date +%H%M%S)
+HD_IMG     	?= hd.img
+CLEAN_IMG  	?= ../hd-clean.img
+HATARI     	?= hatari-hrdb
+TOS_ROM    	?= $(HOME)/ATARI/TOS/tos162uk.img
+TIME       	?= $(shell date +%H%M%S)
 DEBUG_SCRIPT = breakpoints.txt
-BREAK_ADDR = 0xA8B2
+#BREAK_ADDR = 0xA8B2
+BREAK_ADDR 	= 0xDA42
 
+all: $(PRG)
 
-BREAK_ADDR = 0xDA42
+$(PRG): $(OBJS)
+	$(LD) $(LIBS) -o $@ $^
 
-all: $(OUTPUT)
-
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+$(TARGET): $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $^
 
 $(OUTPUT): $(TARGET) $(INPUT)
 	mkdir -p output
 	./$(TARGET) $(INPUT) $(OUTPUT)
-
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -62,5 +63,5 @@ deploy: $(OUTPUT)
 		--auto G:COPY.PRG
 
 clean:
-	rm -f $(OBJ) $(TARGET) $(DEBUG_SCRIPT) $(OUTPUT)
+	rm -f $(OBJS) $(TARGET) $(DEBUG_SCRIPT) $(OUTPUT) $(PRG)
 
