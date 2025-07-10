@@ -1,5 +1,3 @@
-CC      ?= gcc
-LD      ?= gcc
 CC      = m68k-atari-tos-gnu-gcc
 LD      = m68k-atari-tos-gnu-ld
 CFLAGS  = -std=c99 -Wall -Wextra -O2
@@ -13,9 +11,9 @@ OUTPUT     	= ./test/HDDRIVER.SYS
 BUILD_DIR  	= build
 
 HD_IMG     	?= hd.img
-CLEAN_IMG  	?= ../hd-clean.img
+CLEAN_IMG	?= hd-clean.img
 HATARI     	?= hatari-hrdb
-TOS_ROM    	?= $(HOME)/ATARI/TOS/tos162uk.img
+TOS_ROM    	?= $(HOME)/ATARI/TOS/tos206uk.img
 TIME       	?= $(shell date +%H%M%S)
 DEBUG_SCRIPT = breakpoints.txt
 #BREAK_ADDR = 0xA8B2
@@ -36,31 +34,34 @@ $(OUTPUT): $(TARGET) $(INPUT)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
 
-run: $(OUTPUT)
+run:
 	echo "" > $(DEBUG_SCRIPT)
 	echo 'a $(BREAK_ADDR)' >> $(DEBUG_SCRIPT)
 	$(HATARI) \
-		--fast-boot TRUE --fast-forward TRUE --timer-d TRUE \
 		-w -m --machine ste --tos $(TOS_ROM) \
-		--harddrive "$(shell pwd)/output/" \
+		--fullscreen \
+		--harddrive "$(shell pwd)/output/" --gemdos-drive G \
+		--acsi 0=$(HD_IMG) \
 		--parse $(DEBUG_SCRIPT) \
+		--fast-boot TRUE --fast-forward TRUE --timer-d TRUE \
 		--confirm-quit false
 
-deploy: $(OUTPUT)
+deploy:
 	echo "" > $(DEBUG_SCRIPT)
 	echo 'a $(BREAK_ADDR)' >> $(DEBUG_SCRIPT)
-	cp -f $(CLEAN_HD_IMG) $(HD_IMG)
-	mkdir -p output/auto
-	cp copier/COPY.PRG output/
-	cp copier/DUMMY.PRG output/
+	cp -f $(CLEAN_IMG) $(HD_IMG)
+	mkdir -p output/AUTO
+	cp copier/AUTOCOPY.TOS output/AUTO/
 	$(HATARI) \
-		--fast-boot TRUE --fast-forward TRUE --timer-d TRUE \
+		--fast-boot 1 --fast-forward 0 --timer-d 1 \
 		-w -m --machine ste --tos $(TOS_ROM) \
+		--fullscreen \
 		--harddrive "$(shell pwd)/output/" --gemdos-drive G \
 		--acsi 0=$(HD_IMG) \
 		--parse $(DEBUG_SCRIPT) \
 		--confirm-quit false \
-		--auto G:COPY.PRG
+		--auto "G:\AUTO\AUTOCOPY.TOS"
+
 
 clean:
 	rm -f $(OBJS) $(TARGET) $(DEBUG_SCRIPT) $(OUTPUT) $(PRG)
