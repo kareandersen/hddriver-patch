@@ -93,11 +93,15 @@ uint32_t find_string(const uint8_t *data, size_t size) {
 
 int main(int argc, char **argv)
 {
-    printf("\r\nHDDriver STE DMA fix patcher \r\n\n");
-    printf("by Carpet Ritz Crumbs\r\n");
+    printf("\r\nHDDriver STE DMA fix patcher v0.1\r\n\r\n");
+    printf("    by Carpet Ritz Crumbs\n\r\n\r\n");
+    printf("NB! ALPHA LEVEL SOFTWARE \r\nBACK YOUR FILES UP BEFORE USE!\r\n\r\n");
+    printf("   Educational use only.\r\n\r\n");
 
     if (argc != 3) {
-        printf("Usage: %s original.sys patched.sys\r\n", argv[0]);
+        printf("\r\nUsage: %s original.sys patched.sys\r\n", argv[0]);
+        gemdos_cconin();
+
         return 1;
     }
 
