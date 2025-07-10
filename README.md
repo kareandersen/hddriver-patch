@@ -6,6 +6,6 @@ PLEASE support the author of the original software by purchasing it at https://w
 
 This is alpha software. Be careful and back up your files.
 
-Builds with https://github.com/frno7/toslibc
+Builds with TOS/Libc by Fredrik Noring - https://github.com/frno7/toslibc
 
 Share and enjoy!
