@@ -100,15 +100,13 @@ int main(int argc, char **argv)
 
     if (argc != 3) {
         printf("\r\nUsage: %s original.sys patched.sys\r\n", argv[0]);
-        gemdos_cconin();
-
-        return 1;
+        goto error;
     }
 
     FILE *fin = fopen(argv[1], "rb");
     if (!fin) {
         printf("Can't open input file: %s\r\n", argv[1]);
-        return 1;
+        goto error;
     }
 
     fseek(fin, 0, SEEK_END);
@@ -119,7 +117,7 @@ int main(int argc, char **argv)
     if (!data) {
         printf("malloc failed\r\n");
         fclose(fin);
-        return 1;
+        goto error;
     }
 
     fread(data, 1, insize, fin);
@@ -128,14 +126,14 @@ int main(int argc, char **argv)
     if (read_be16(data) != 0x601A) {
         printf("Not a GEMDOS executable file\r\n");
         free(data);
-        return 1;
+        goto error;
     }
 
     uint32_t patch1_offset = find_aligned_pattern(data, insize, INST_PATTERN, 2);
     if (patch1_offset == UINT32_MAX) {
         printf("First occurrence of problematic code not found\r\n");
         free(data);
-        return 1;
+        goto error;
     }
 
     uint32_t patch2_offset = find_aligned_pattern(data + patch1_offset + 4,
@@ -144,7 +142,7 @@ int main(int argc, char **argv)
     if (patch2_offset == UINT32_MAX) {
         printf("Second occurrence of problematic code not found\r\n");
         free(data);
-        return 1;
+        goto error;
     }
 
     patch2_offset += patch1_offset + 4;
@@ -160,7 +158,7 @@ int main(int argc, char **argv)
     if (!fout) {
         printf("Can't open output file: %s\r\n", argv[2]);
         free(data);
-        return 1;
+        goto error;
     }
 
     fwrite(data, 1, insize, fout);
@@ -168,6 +166,12 @@ int main(int argc, char **argv)
     free(data);
 
     printf("Patched driver written to: %s\r\n", argv[2]);
+    gemdos_cconin();
     return 0;
+
+error:
+    gemdos_cconin();
+    return 1;
+
 }
 
