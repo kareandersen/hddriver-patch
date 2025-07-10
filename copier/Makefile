@@ -1,6 +1,6 @@
 CC      = m68k-atari-tos-gnu-gcc
 LD      = m68k-atari-tos-gnu-ld
-CFLAGS  = -std=c99 -Wall -Wextra -O2
+CFLAGS  = -std=c99 -Wall -Wextra -O2 -Wno-array-bounds
 
 OBJS	= autocopy.o
 TARGET 	= AUTOCOPY.TOS

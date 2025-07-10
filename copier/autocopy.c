@@ -2,15 +2,33 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <tos/xbios.h>
+#include <tos/system-variable.h>
 
 #define BUF_SIZE 4096
+#define DEFAULT_SELF "G:\\AUTO\\AUTOCOPY.TOS"
 
-void reset_machine() {
-    __asm__ volatile ("\tjmp\t0");
+struct args = {
+    .nvbls = 50;
+};
+
+void reset_machine()
+{
+	__asm__ volatile(" lea 0x4.w,%a0\n move.l (%a0),%a0\n jmp (%a0)");
 }
 
-void delete_self(char *argv0) {
-    unlink(argv0);
+void wait_no_vbls(struct args vbls) {
+    volatile int *frclock = (int*)0x466;
+    int done_at = vbls + *frclock;
+    int current;
+
+    do { current = *frclock; }
+        while ( current < done_at);
+}
+
+int delete_self(const char *self) {
+    printf("\r\nAttempting to delete self: %s\r\n", self);
+    return unlink(self);
 }
 
 int copy_file(const char *src, const char *dst) {
@@ -43,15 +61,32 @@ int copy_file(const char *src, const char *dst) {
 }
 
 int main(int argc, char **argv) {
-    int rc = copy_file("A:\\HDDRIVER.SYS", "C:\\HDDRIVER.SYS");
+    argc = argc; argv = argv;
+
+    int rc = copy_file("G:\\HDDRIVER.SYS", "C:\\HDDRIVER.SYS");
     if (rc != 0) {
-        printf("Copy failed.\r\n");
-        return (rc << 8); // show error code in low byte
+        printf("Copy failed. Aborting.\r\n");
+        return (rc << 8);
     }
 
-    if (argc > 0) delete_self(argv[0]);
+    char* self = (char*)argv[0];
+    if (!strlen(self)) self = DEFAULT_SELF;
+    int error = delete_self(self);
+    if (error) goto handle_error;
 
-    reset_machine();
+    printf("Self deleted - rebooting in.\r\n\n");
+    int wt = 3;
+    struct args args;
+    do {
+        printf("%d...\r", wt);
+        xbios_supexecarg(wait_no_vbls, &args);
+    } while(--wt);
+
+    xbios_supexecarg(reset_machine, NULL);
     return 0;
+
+handle_error:
+    printf("Failed to delete, halting to avoid reset loop.");
+    while(true);
 }
 
